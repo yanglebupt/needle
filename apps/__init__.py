@@ -1,2 +1,2 @@
 from .simple_ml import *
-# from .mlp_resnet import *
+from .mlp_resnet import *

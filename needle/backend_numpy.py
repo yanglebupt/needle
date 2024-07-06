@@ -39,6 +39,7 @@ class CPUDevice(Device):
         return numpy.random.rand(*shape)
 
     def one_hot(self, n, i, dtype="float32"):
+        # (n,n) 的单位矩阵，然后根据 y 的值（类别索引）取行，就可以得到 one-hot 的矩阵
         return numpy.eye(n, dtype=dtype)[i]
 
     def empty(self, shape, dtype="float32"):

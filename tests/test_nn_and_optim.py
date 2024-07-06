@@ -1,10 +1,8 @@
 import sys
 import numpy as np
 import needle as ndl
-# import needle.nn as nn
-
-# from mlp_resnet import *
-
+import needle.nn as nn
+from apps import *
 import mugrade
 
 """Deterministically generate a matrix"""

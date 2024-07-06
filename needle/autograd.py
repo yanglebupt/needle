@@ -4,6 +4,8 @@ from .backend_numpy import Device, cpu, all_devices
 from typing import List, Optional, NamedTuple, Tuple, Union
 from collections import namedtuple
 import numpy
+from operator import add, mul
+from functools import reduce
 
 from needle import init
 
@@ -203,11 +205,13 @@ class Tensor(Value):
         **kwargs
     ):
         if isinstance(array, Tensor):
+            
             if device is None:
                 device = array.device
             if dtype is None:
                 dtype = array.dtype
             if device == array.device and dtype == array.dtype:
+                
                 cached_data = array.realize_cached_data()
             else:
                 # fall back, copy through numpy conversion
@@ -274,6 +278,10 @@ class Tensor(Value):
     @property
     def shape(self):
         return self.realize_cached_data().shape
+    
+    @property
+    def size(self):
+        return reduce(mul, self.realize_cached_data().shape) 
 
     @property
     def dtype(self):
@@ -438,7 +446,5 @@ def topo_sort_dfs(node, visited, topo_order):
 
 def sum_node_list(node_list):
     """Custom sum function in order to avoid create redundant nodes in Python sum implementation."""
-    from operator import add
-    from functools import reduce
 
     return reduce(add, node_list)

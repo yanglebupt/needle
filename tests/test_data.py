@@ -1,5 +1,3 @@
-import sys
-sys.path.append("./python")
 import needle as ndl
 import numpy as np
 

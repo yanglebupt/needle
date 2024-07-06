@@ -1,4 +1,3 @@
-import sys
 import numdifftools as nd
 import numpy as np
 import mugrade

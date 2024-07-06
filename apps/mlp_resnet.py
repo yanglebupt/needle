@@ -1,7 +1,4 @@
-import sys
-
 from needle.data import MNISTDataset, DataLoader
-sys.path.append('../python')
 import needle as ndl
 import needle.nn as nn
 import numpy as np

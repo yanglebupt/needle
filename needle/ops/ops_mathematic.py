@@ -210,9 +210,13 @@ class BroadcastTo(TensorOp):
         input_shape = node.inputs[0].shape
         sum_axes = [i for i in range(len(self.shape))]
         # broadcast 是不改变 ndim
-        for i, (ori, cur) in enumerate(zip(input_shape, self.shape)):
+        '''
+        但需要注意一个特殊情况 (n,) 可以 broadcast_to (m,n)
+        这个时候需要返过来遍历
+        '''
+        for i, (ori, cur) in enumerate(zip(reversed(input_shape), reversed(self.shape))):
           if cur==ori:
-            sum_axes[i] = -1 # 没有 broadcast 的轴
+            sum_axes[len(self.shape) - i - 1] = -1 # 没有 broadcast 的轴
         sum_axes = tuple(filter(lambda x: x>=0, sum_axes))
         return out_grad.sum(sum_axes).reshape(input_shape)
         ### END YOUR SOLUTION
