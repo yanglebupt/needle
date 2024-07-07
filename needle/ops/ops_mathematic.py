@@ -77,7 +77,7 @@ class PowerScalar(TensorOp):
 
     def compute(self, a: NDArray) -> NDArray:
         ### BEGIN YOUR SOLUTION
-        return a ** self.scalar
+        return a**self.scalar
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
@@ -108,6 +108,7 @@ class EWisePow(TensorOp):
         grad_b = out_grad * (a**b) * array_api.log(a.data)
         return grad_a, grad_b
 
+
 def power(a, b):
     return EWisePow()(a, b)
 
@@ -123,7 +124,7 @@ class EWiseDiv(TensorOp):
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
         a, b = node.inputs
-        return out_grad / b, - a * out_grad / b ** 2
+        return out_grad / b, -a * out_grad / b**2
         ### END YOUR SOLUTION
 
 
@@ -160,14 +161,16 @@ class Transpose(TensorOp):
         # 2. array_api.transpose 是重新排列轴，例如 (0,1) 是不会交换的，必须要 (1,0) 才会交换
         # array_api.swapaxes 无论是 (0,1) 还是 (1,0) 都会交换这两个轴
         if self.axes is not None:
-          return array_api.swapaxes(a, self.axes[0], self.axes[1])
+            return array_api.swapaxes(a, self.axes[0], self.axes[1])
         else:
-          return array_api.swapaxes(a, a.ndim - 2, a.ndim - 1)
+            return array_api.swapaxes(a, a.ndim - 2, a.ndim - 1)
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        return out_grad.transpose(self.axes) # transpose back, op return a new value, not in-place change
+        return out_grad.transpose(
+            self.axes
+        )  # transpose back, op return a new value, not in-place change
         ### END YOUR SOLUTION
 
 
@@ -186,7 +189,9 @@ class Reshape(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        return out_grad.reshape(node.inputs[0].shape) # back to input shape, gradient shape same as input shape 
+        return out_grad.reshape(
+            node.inputs[0].shape
+        )  # back to input shape, gradient shape same as input shape
         ### END YOUR SOLUTION
 
 
@@ -210,14 +215,16 @@ class BroadcastTo(TensorOp):
         input_shape = node.inputs[0].shape
         sum_axes = list(range(len(self.shape)))
         # broadcast 是不改变 ndim
-        '''
+        """
         但需要注意一个特殊情况 (n,) 可以 broadcast_to (m,n)
         这个时候需要返过来遍历
-        '''
-        for i, (ori, cur) in enumerate(zip(reversed(input_shape), reversed(self.shape))):
-          if cur==ori:
-            sum_axes[len(self.shape) - i - 1] = -1 # 没有 broadcast 的轴
-        sum_axes = tuple(filter(lambda x: x>=0, sum_axes))
+        """
+        for i, (ori, cur) in enumerate(
+            zip(reversed(input_shape), reversed(self.shape))
+        ):
+            if cur == ori:
+                sum_axes[len(self.shape) - i - 1] = -1  # 没有 broadcast 的轴
+        sum_axes = tuple(filter(lambda x: x >= 0, sum_axes))
         return out_grad.sum(sum_axes).reshape(input_shape)
         ### END YOUR SOLUTION
 
@@ -241,7 +248,7 @@ class Summation(TensorOp):
         new_shape = list(input_shape)
         sum_axes = range(len(new_shape)) if self.axes is None else self.axes
         for axes in sum_axes:
-          new_shape[axes] = 1  # 对 sum 轴填充 1
+            new_shape[axes] = 1  # 对 sum 轴填充 1
         return out_grad.reshape(new_shape).broadcast_to(input_shape)
         ### END YOUR SOLUTION
 
@@ -263,9 +270,13 @@ class MatMul(TensorOp):
         # 如果梯度的维数比原始形状多，沿着额外的轴求和
         # (6,6,5,4) @ (4,3) 你会发现，此时 b_grad (6,6,4,3)
         if len(a.shape) < len(a_grad.shape):
-          a_grad = a_grad.sum(tuple([i for i in range(len(a_grad.shape)-len(a.shape))]))
+            a_grad = a_grad.sum(
+                tuple([i for i in range(len(a_grad.shape) - len(a.shape))])
+            )
         if len(b.shape) < len(b_grad.shape):
-          b_grad = b_grad.sum(tuple([i for i in range(len(b_grad.shape)-len(b.shape))]))
+            b_grad = b_grad.sum(
+                tuple([i for i in range(len(b_grad.shape) - len(b.shape))])
+            )
         return a_grad, b_grad
         ### END YOUR SOLUTION
 
@@ -277,12 +288,12 @@ def matmul(a, b):
 class Negate(TensorOp):
     def compute(self, a):
         ### BEGIN YOUR SOLUTION
-        return - a
+        return -a
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        return - out_grad
+        return -out_grad
         ### END YOUR SOLUTION
 
 
@@ -326,15 +337,17 @@ class ReLU(TensorOp):
     def compute(self, a):
         ### BEGIN YOUR SOLUTION
         out = array_api.copy(a)
-        out[a<0] = 0
+        out[a < 0] = 0
         return out
         ### END YOUR SOLUTION
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        out = node.inputs[0].realize_cached_data().copy()  # 尽可能拷贝，不要自己新建，很容易忘记设置 dtype 和 device
-        out[out>0] = 1
-        return out_grad * Tensor(out) 
+        # 尽可能拷贝，不要自己新建，很容易忘记设置 dtype 和 device
+        # 注意这里是 node，不是  node.input，node.input 有小于 0 的，而 relu 在小于 0 处的梯度都是 0
+        out = node.realize_cached_data().copy()
+        out[out > 0] = 1
+        return out_grad * Tensor(out)
         ### END YOUR SOLUTION
 
 

@@ -1,5 +1,6 @@
 from ..data_basic import Dataset
 
+# 可以传入 *arrays = images, labels
 class NDArrayDataset(Dataset):
     def __init__(self, *arrays):
         self.arrays = arrays

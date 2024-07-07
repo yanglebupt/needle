@@ -34,6 +34,7 @@ class SGD(Optimizer):
             if self.weight_decay is not None and self.weight_decay > 0:
                 g = g + self.weight_decay * w
             u = self.momentum * self.u.get(param, 0) + (1 - self.momentum) * g
+
             param.data = w - self.lr * u
             self.u[param] = u
         ### END YOUR SOLUTION
@@ -70,5 +71,18 @@ class Adam(Optimizer):
 
     def step(self):
         ### BEGIN YOUR SOLUTION
-        pass
+        self.t += 1
+        for param in self.params:
+            w = param.data
+            g = param.grad.data
+            if self.weight_decay is not None and self.weight_decay > 0:
+                g = g + self.weight_decay * w
+            m = self.beta1 * self.m.get(param, 0) + (1 - self.beta1) * g
+            v = self.beta2 * self.v.get(param, 0) + (1 - self.beta2) * g * g
+            m_bias_correct = m / (1 - self.beta1**self.t)
+            v_bias_correct = v / (1 - self.beta2**self.t)
+
+            param.data = w - self.lr * m_bias_correct / (v_bias_correct**0.5 + self.eps)
+            self.m[param] = m
+            self.v[param] = v
         ### END YOUR SOLUTION

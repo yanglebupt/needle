@@ -150,13 +150,13 @@ def submit_random_crop():
 
 
 
-
+root="./apps/data"
 
 
 def test_mnist_dataset():
     # Test dataset sizing
-    mnist_train_dataset = ndl.data.MNISTDataset("data/train-images-idx3-ubyte.gz",
-                                                "data/train-labels-idx1-ubyte.gz")
+    mnist_train_dataset = ndl.data.MNISTDataset(f"{root}/train-images-idx3-ubyte.gz",
+                                                f"{root}/train-labels-idx1-ubyte.gz")
     assert len(mnist_train_dataset) == 60000
 
     sample_norms = np.array([np.linalg.norm(mnist_train_dataset[idx][0]) for idx in [1,42,1000,2000,3000,4000,5000,5005]])
@@ -167,8 +167,8 @@ def test_mnist_dataset():
     np.testing.assert_allclose(sample_norms, compare_against)
     np.testing.assert_allclose(sample_labels, compare_labels)
 
-    mnist_train_dataset = ndl.data.MNISTDataset("data/t10k-images-idx3-ubyte.gz",
-                                               "data/t10k-labels-idx1-ubyte.gz")
+    mnist_train_dataset = ndl.data.MNISTDataset(f"{root}/t10k-images-idx3-ubyte.gz",
+                                               f"{root}/t10k-labels-idx1-ubyte.gz")
     assert len(mnist_train_dataset) == 10000
 
     sample_norms = np.array([np.linalg.norm(mnist_train_dataset[idx][0]) for idx in [1,42,1000,2000,3000,4000,5000,5005]])
@@ -182,8 +182,8 @@ def test_mnist_dataset():
     # test a transform
     np.random.seed(0)
     tforms = [ndl.data.RandomCrop(28), ndl.data.RandomFlipHorizontal()]
-    mnist_train_dataset = ndl.data.MNISTDataset("data/train-images-idx3-ubyte.gz",
-                                                "data/train-labels-idx1-ubyte.gz",
+    mnist_train_dataset = ndl.data.MNISTDataset(f"{root}/train-images-idx3-ubyte.gz",
+                                                f"{root}/train-labels-idx1-ubyte.gz",
                                                 transforms=tforms)
 
     sample_norms = np.array([np.linalg.norm(mnist_train_dataset[idx][0]) for idx in [1,42,1000,2000,3000,4000,5000,5005]])
@@ -197,8 +197,8 @@ def test_mnist_dataset():
 
     # test a transform
     tforms = [ndl.data.RandomCrop(12), ndl.data.RandomFlipHorizontal(0.4)]
-    mnist_train_dataset = ndl.data.MNISTDataset("data/train-images-idx3-ubyte.gz",
-                                                "data/train-labels-idx1-ubyte.gz",
+    mnist_train_dataset = ndl.data.MNISTDataset(f"{root}/train-images-idx3-ubyte.gz",
+                                                f"{root}/train-labels-idx1-ubyte.gz",
                                                 transforms=tforms)
     sample_norms = np.array([np.linalg.norm(mnist_train_dataset[idx][0]) for idx in [1,42,1000,2000,3000,4000,5000,5005]])
     compare_against = np.array([5.369537, 5.5454974, 8.966858, 7.547235, 8.785921, 7.848442, 7.1654058, 9.361828])
@@ -210,14 +210,14 @@ def test_mnist_dataset():
 
 
 def submit_mnist_dataset():
-    mnist_train_dataset = ndl.data.MNISTDataset("data/train-images-idx3-ubyte.gz",
-                                                "data/train-labels-idx1-ubyte.gz")
+    mnist_train_dataset = ndl.data.MNISTDataset(f"{root}/train-images-idx3-ubyte.gz",
+                                                f"{root}/train-labels-idx1-ubyte.gz")
     mugrade.submit(mnist_train_dataset[69][:25])
     mugrade.submit(len(mnist_train_dataset))
     np.random.seed(0)
     tforms = [ndl.data.RandomFlipHorizontal()]
-    mnist_train_dataset = ndl.data.MNISTDataset("data/train-images-idx3-ubyte.gz",
-                                                "data/train-labels-idx1-ubyte.gz",
+    mnist_train_dataset = ndl.data.MNISTDataset(f"{root}/train-images-idx3-ubyte.gz",
+                                                f"{root}/train-labels-idx1-ubyte.gz",
                                                 transforms=tforms)
 
     for i in [822, 69, 420, 96]:
@@ -225,8 +225,8 @@ def submit_mnist_dataset():
 
 
     tforms = [ndl.data.RandomCrop(15), ndl.data.RandomFlipHorizontal()]
-    mnist_train_dataset = ndl.data.MNISTDataset("data/train-images-idx3-ubyte.gz",
-                                                "data/train-labels-idx1-ubyte.gz",
+    mnist_train_dataset = ndl.data.MNISTDataset(f"{root}/train-images-idx3-ubyte.gz",
+                                                f"{root}/train-labels-idx1-ubyte.gz",
                                                 transforms=tforms)
 
     for i in [822, 69, 420, 96]:
@@ -236,8 +236,8 @@ def submit_mnist_dataset():
 
 def test_dataloader_mnist():
     batch_size = 1
-    mnist_train_dataset = ndl.data.MNISTDataset("data/train-images-idx3-ubyte.gz",
-                                                "data/train-labels-idx1-ubyte.gz")
+    mnist_train_dataset = ndl.data.MNISTDataset(f"{root}/train-images-idx3-ubyte.gz",
+                                                f"{root}/train-labels-idx1-ubyte.gz")
     mnist_train_dataloader = ndl.data.DataLoader(dataset=mnist_train_dataset,
                                                  batch_size=batch_size,
                                                  shuffle=False)
@@ -252,8 +252,8 @@ def test_dataloader_mnist():
         np.testing.assert_allclose(batch_y, truth_y)
 
     batch_size = 5
-    mnist_test_dataset = ndl.data.MNISTDataset("data/t10k-images-idx3-ubyte.gz",
-                                               "data/t10k-labels-idx1-ubyte.gz")
+    mnist_test_dataset = ndl.data.MNISTDataset(f"{root}/t10k-images-idx3-ubyte.gz",
+                                               f"{root}/t10k-labels-idx1-ubyte.gz")
     mnist_test_dataloader = ndl.data.DataLoader(dataset=mnist_test_dataset,
                                                 batch_size=batch_size,
                                                 shuffle=False)
@@ -323,8 +323,8 @@ def test_dataloader_ndarray():
 
 def submit_dataloader():
     batch_size = 1
-    mnist_train_dataset = ndl.data.MNISTDataset("data/train-images-idx3-ubyte.gz",
-                                                "data/train-labels-idx1-ubyte.gz")
+    mnist_train_dataset = ndl.data.MNISTDataset(f"{root}/train-images-idx3-ubyte.gz",
+                                                f"{root}/train-labels-idx1-ubyte.gz")
     mnist_train_dataloader = ndl.data.DataLoader(dataset=mnist_train_dataset,
                                                  batch_size=batch_size,
                                                  shuffle=False)
@@ -338,8 +338,8 @@ def submit_dataloader():
     mugrade.submit(subl)
 
     batch_size = 5
-    mnist_test_dataset = ndl.data.MNISTDataset("data/t10k-images-idx3-ubyte.gz",
-                                               "data/t10k-labels-idx1-ubyte.gz")
+    mnist_test_dataset = ndl.data.MNISTDataset(f"{root}/t10k-images-idx3-ubyte.gz",
+                                               f"{root}/t10k-labels-idx1-ubyte.gz")
     mnist_test_dataloader = ndl.data.DataLoader(dataset=mnist_test_dataset,
                                                 batch_size=batch_size,
                                                 shuffle=False)
