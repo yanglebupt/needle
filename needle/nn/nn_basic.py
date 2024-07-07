@@ -139,7 +139,7 @@ class SoftmaxLoss(Module):
         ### BEGIN YOUR SOLUTION
         B, N = logits.shape
         y_one_hot = init.one_hot(N, y)
-        return (ops.log(ops.exp(logits).sum((1,))).sum() - (y_one_hot * logits).sum()) / B
+        return (ops.logsumexp(logits, (1,)).sum() - (y_one_hot * logits).sum()) / B
         ### END YOUR SOLUTION
 
 
@@ -158,19 +158,49 @@ class BatchNorm1d(Module):
         raise NotImplementedError()
         ### END YOUR SOLUTION
 
+class LayerNorm(Module):
+    def __init__(self, dims: List[int], eps=1e-5, device=None, dtype="float32"):
+      super().__init__()
+      self.dims = dims
+      self.eps = eps
+      ### BEGIN YOUR SOLUTION
+      kwargs = dict(
+        device=device,
+        dtype=dtype,
+        requires_grad=True
+      )
+      self.weight = Parameter(init.ones(dim, **kwargs))
+      self.bias = Parameter(init.zeros(dim, **kwargs))
+      ### END YOUR SOLUTION
 
+    def forward(self, x: Tensor) -> Tensor:
+      pass
+# 可以推广到 任意维度的 LayerNorm
 class LayerNorm1d(Module):
     def __init__(self, dim, eps=1e-5, device=None, dtype="float32"):
         super().__init__()
         self.dim = dim
         self.eps = eps
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        kwargs = dict(
+          device=device,
+          dtype=dtype,
+          requires_grad=True
+        )
+        self.weight = Parameter(init.ones(dim, **kwargs))
+        self.bias = Parameter(init.zeros(dim, **kwargs))
         ### END YOUR SOLUTION
 
     def forward(self, x: Tensor) -> Tensor:
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        input_shape = x.shape
+        assert len(input_shape)==2
+        assert input_shape[1]==self.dim
+        n = input_shape[0]
+        mean = (x.sum((1,))/self.dim).reshape((n,1)).broadcast_to(input_shape)
+        var = (((x - mean)**2).sum((1,))/self.dim).reshape((n,1)).broadcast_to(input_shape)
+        std = (var + self.eps)**0.5
+        return self.weight.broadcast_to(input_shape) * (x - mean) / std + self.bias.broadcast_to(input_shape)
         ### END YOUR SOLUTION
 
 

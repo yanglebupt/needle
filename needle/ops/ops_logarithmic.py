@@ -30,7 +30,7 @@ class LogSumExp(TensorOp):
     def compute(self, Z):
         ### BEGIN YOUR SOLUTION
         max_z = array_api.max(Z, self.axes, keepdims=True)
-        out = array_api.log( array_api.exp( Z - max_z).sum(self.axes) )
+        out = array_api.log( array_api.exp(Z - max_z).sum(self.axes) )
         return out + max_z.reshape(out.shape)
         ### END YOUR SOLUTION
 
@@ -38,8 +38,19 @@ class LogSumExp(TensorOp):
         ### BEGIN YOUR SOLUTION
         # 梯度可以拆成三部分
         Z = node.inputs[0]
-        max_z = array_api.max(Z.realize_cached_data, self.axes, keepdims=True)
-        exp_z = 
+        max_z = Tensor(array_api.max(Z.realize_cached_data(), self.axes, keepdims=True))
+        exp_z = exp(Z - max_z)
+        sum_exp_z = exp_z.sum(self.axes)
+        grad = out_grad / sum_exp_z
+
+        input_shape = Z.shape
+        new_shape = list(input_shape)
+        sum_axes = list(range(len(new_shape))) if self.axes is None else self.axes
+        for axes in sum_axes:
+          new_shape[axes] = 1
+
+        grad = grad.reshape(new_shape).broadcast_to(input_shape)  
+        return grad * exp_z
         ### END YOUR SOLUTION
 
 

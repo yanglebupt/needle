@@ -208,7 +208,7 @@ class BroadcastTo(TensorOp):
         # 在 broadcast 维度上求和，因为 broadcast 节点本质上就是
         # 一个输入，然后通过复用到多个输出（注意不是拷贝）
         input_shape = node.inputs[0].shape
-        sum_axes = [i for i in range(len(self.shape))]
+        sum_axes = list(range(len(self.shape)))
         # broadcast 是不改变 ndim
         '''
         但需要注意一个特殊情况 (n,) 可以 broadcast_to (m,n)
@@ -239,7 +239,7 @@ class Summation(TensorOp):
         ### BEGIN YOUR SOLUTION
         input_shape = node.inputs[0].shape
         new_shape = list(input_shape)
-        sum_axes = range(len(input_shape)) if self.axes is None else self.axes
+        sum_axes = range(len(new_shape)) if self.axes is None else self.axes
         for axes in sum_axes:
           new_shape[axes] = 1  # 对 sum 轴填充 1
         return out_grad.reshape(new_shape).broadcast_to(input_shape)
