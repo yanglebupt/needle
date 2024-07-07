@@ -233,7 +233,7 @@ class Tensor(Value):
     def _array_from_numpy(numpy_array, device, dtype):
         if array_api is numpy:
             return numpy.array(numpy_array, dtype=dtype)
-        return array_api.array(numpy_array, device=device, dtype=dtype)
+        return array_api.array(numpy_array, device=device, dtype=dtype)  # 这里会重新设置 dtype
 
     @staticmethod
     def make_from_op(op: Op, inputs: List["Value"]):

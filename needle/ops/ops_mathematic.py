@@ -332,9 +332,8 @@ class ReLU(TensorOp):
 
     def gradient(self, out_grad, node):
         ### BEGIN YOUR SOLUTION
-        ipt = node.inputs[0].realize_cached_data()
-        out = array_api.zeros(ipt.shape)
-        out[ipt>0] = 1
+        out = node.inputs[0].realize_cached_data().copy()  # 尽可能拷贝，不要自己新建，很容易忘记设置 dtype 和 device
+        out[out>0] = 1
         return out_grad * Tensor(out) 
         ### END YOUR SOLUTION
 

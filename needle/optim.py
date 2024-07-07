@@ -1,10 +1,13 @@
 """Optimization module"""
-import needle as ndl
+
+from typing import List
 import numpy as np
+from .nn import Parameter
 
 
 class Optimizer:
-    def __init__(self, params):
+
+    def __init__(self, params: List[Parameter]):
         self.params = params
 
     def step(self):
@@ -25,7 +28,14 @@ class SGD(Optimizer):
 
     def step(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        for param in self.params:
+            w = param.data
+            g = param.grad.data
+            if self.weight_decay is not None and self.weight_decay > 0:
+                g = g + self.weight_decay * w
+            u = self.momentum * self.u.get(param, 0) + (1 - self.momentum) * g
+            param.data = w - self.lr * u
+            self.u[param] = u
         ### END YOUR SOLUTION
 
     def clip_grad_norm(self, max_norm=0.25):
@@ -60,5 +70,5 @@ class Adam(Optimizer):
 
     def step(self):
         ### BEGIN YOUR SOLUTION
-        raise NotImplementedError()
+        pass
         ### END YOUR SOLUTION

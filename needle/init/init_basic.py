@@ -1,7 +1,6 @@
 import math
 import needle as ndl
 
-print(ndl.__dict__)
 
 def rand(*shape, low=0.0, high=1.0, device=None, dtype="float32", requires_grad=False):
     """Generate random numbers uniform between low and high"""
