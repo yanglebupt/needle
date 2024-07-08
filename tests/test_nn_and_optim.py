@@ -2,7 +2,8 @@ import sys
 import numpy as np
 import needle as ndl
 import needle.nn as nn
-from apps import *
+from apps.simple_ml_hw1 import *
+from apps.mlp_resnet import *
 import mugrade
 
 """Deterministically generate a matrix"""
@@ -324,11 +325,12 @@ def mlp_resnet_forward(dim, hidden_dim, num_blocks, num_classes, norm, drop_prob
     output_tensor = MLPResNet(dim, hidden_dim, num_blocks, num_classes, norm, drop_prob)(input_tensor)
     return output_tensor.numpy()
 
+data_dir = "./apps/data"
 def train_epoch_1(hidden_dim, batch_size, optimizer, **kwargs):
     np.random.seed(1)
     train_dataset = ndl.data.MNISTDataset(\
-            "./data/train-images-idx3-ubyte.gz",
-            "./data/train-labels-idx1-ubyte.gz")
+            f"{data_dir}/train-images-idx3-ubyte.gz",
+            f"{data_dir}/train-labels-idx1-ubyte.gz")
     train_dataloader = ndl.data.DataLoader(\
              dataset=train_dataset,
              batch_size=batch_size)
@@ -341,8 +343,8 @@ def train_epoch_1(hidden_dim, batch_size, optimizer, **kwargs):
 def eval_epoch_1(hidden_dim, batch_size):
     np.random.seed(1)
     test_dataset = ndl.data.MNISTDataset(\
-            "./data/t10k-images-idx3-ubyte.gz",
-            "./data/t10k-labels-idx1-ubyte.gz")
+            f"{data_dir}/t10k-images-idx3-ubyte.gz",
+            f"{data_dir}/t10k-labels-idx1-ubyte.gz")
     test_dataloader = ndl.data.DataLoader(\
              dataset=test_dataset,
              batch_size=batch_size,
@@ -354,7 +356,7 @@ def eval_epoch_1(hidden_dim, batch_size):
 
 def train_mnist_1(batch_size, epochs, optimizer, lr, weight_decay, hidden_dim):
     np.random.seed(1)
-    out = train_mnist(batch_size, epochs, optimizer, lr, weight_decay, hidden_dim, data_dir="./data")
+    out = train_mnist(batch_size, epochs, optimizer, lr, weight_decay, hidden_dim, data_dir=f"{data_dir}")
     return np.array(out)
 
 

@@ -31,24 +31,24 @@ def parse_mnist(image_filename, label_filename):
     """
     ### BEGIN YOUR CODE
     with gzip.open(image_filename, "rb") as f:
-      # MSB first, high endian, big endian
-      magic_number, image_nums, rows, cols = struct.unpack(">4i", f.read(16))
-      assert magic_number == 2051
-      pixels = rows * cols
-      X = np.vstack(
-        [
-          np.array(struct.unpack(f"{pixels}B", f.read(pixels)), dtype=np.float32)
-          for _ in range(image_nums)
-        ]
-      )
-      X /= 255  # 别忘了归一化
+        # MSB first, high endian, big endian
+        magic_number, image_nums, rows, cols = struct.unpack(">4i", f.read(16))
+        assert magic_number == 2051
+        pixels = rows * cols
+        X = np.vstack(
+            [
+                np.array(struct.unpack(f"{pixels}B", f.read(pixels)), dtype=np.float32)
+                for _ in range(image_nums)
+            ]
+        )
+        X /= 255  # 别忘了归一化
 
     with gzip.open(label_filename, "rb") as f:
-      magic_number, label_nums = struct.unpack(">2i", f.read(8))
-      assert magic_number == 2049
-      Y = np.array(
-        struct.unpack(f"{label_nums}B", f.read(label_nums)), dtype=np.uint8
-      )
+        magic_number, label_nums = struct.unpack(">2i", f.read(8))
+        assert magic_number == 2049
+        Y = np.array(
+            struct.unpack(f"{label_nums}B", f.read(label_nums)), dtype=np.uint8
+        )
 
     return (X, Y)
     ### END YOUR CODE
@@ -105,28 +105,30 @@ def nn_epoch(X, y, W1, W2, lr=0.1, batch=100):
     # 拆分 batch，并遍历
     iterations = math.ceil(X.shape[0] / batch)
     for i in range(iterations):
-      X_batch = ndl.Tensor(X[i * batch : (i + 1) * batch, :])  # 越界会自动截断，不需要自己判断
-      y_batch = y[i * batch : (i + 1) * batch]
-      B = X_batch.shape[0]
+        X_batch = ndl.Tensor(
+            X[i * batch : (i + 1) * batch, :]
+        )  # 越界会自动截断，不需要自己判断
+        y_batch = y[i * batch : (i + 1) * batch]
+        B = X_batch.shape[0]
 
-      # forward
-      Z = ndl.relu(X_batch @ W1) @ W2
+        # forward
+        Z = ndl.relu(X_batch @ W1) @ W2
 
-      # label
-      y_one_hot = np.zeros((B, cls_nums))
-      y_one_hot[range(B), y_batch] = 1
-      y_one_hot = ndl.Tensor(y_one_hot)
+        # label
+        y_one_hot = np.zeros((B, cls_nums))
+        y_one_hot[range(B), y_batch] = 1
+        y_one_hot = ndl.Tensor(y_one_hot)
 
-      # loss
-      loss = softmax_loss(Z, y_one_hot)
-      loss.backward()
+        # loss
+        loss = softmax_loss(Z, y_one_hot)
+        loss.backward()
 
-      # update，这里不能用 Tensor 直接计算，会引入新的图
-      # 这里是一个新 Tensor，不是 in-place change 了
-      W1 = ndl.Tensor(W1.realize_cached_data() - lr * W1.grad.realize_cached_data())
-      W2 = ndl.Tensor(W2.realize_cached_data() - lr * W2.grad.realize_cached_data())
+        # update，这里不能用 Tensor 直接计算，会引入新的图
+        # 这里是一个新 Tensor，不是 in-place change 了
+        W1 = ndl.Tensor(W1.realize_cached_data() - lr * W1.grad.realize_cached_data())
+        W2 = ndl.Tensor(W2.realize_cached_data() - lr * W2.grad.realize_cached_data())
 
-    return W1, W2 
+    return W1, W2
     ### END YOUR SOLUTION
 
 

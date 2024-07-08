@@ -2,7 +2,7 @@ import numdifftools as nd
 import numpy as np
 import mugrade
 import needle as ndl
-from apps import *
+from apps.simple_ml_hw1 import *
 import os
 
 
