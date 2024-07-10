@@ -1,24 +1,22 @@
+import needle.backend_ndarray as nd
 import needle as ndl
 
 
 def rand(*shape, low=0.0, high=1.0, device=None, dtype="float32", requires_grad=False):
     """Generate random numbers uniform between low and high"""
-    device = ndl.cpu() if device is None else device
-    array = device.rand(*shape) * (high - low) + low
+    array = nd.rand(shape, dtype, device) * (high - low) + low
     return ndl.Tensor(array, device=device, dtype=dtype, requires_grad=requires_grad)
 
 
 def randn(*shape, mean=0.0, std=1.0, device=None, dtype="float32", requires_grad=False):
     """Generate random normal with specified mean and std deviation"""
-    device = ndl.cpu() if device is None else device
-    array = device.randn(*shape) * std + mean
+    array = nd.randn(shape, dtype, device) * std + mean
     return ndl.Tensor(array, device=device, dtype=dtype, requires_grad=requires_grad)
 
 
 def constant(*shape, c=1.0, device=None, dtype="float32", requires_grad=False):
     """Generate constant Tensor"""
-    device = ndl.cpu() if device is None else device
-    array = device.ones(*shape, dtype=dtype) * c  # note: can change dtype
+    array = nd.ones(shape, dtype, device) * c  # note: can change dtype
     return ndl.Tensor(array, device=device, dtype=dtype, requires_grad=requires_grad)
 
 
@@ -38,8 +36,7 @@ def zeros(*shape, device=None, dtype="float32", requires_grad=False):
 
 def randb(*shape, p=0.5, device=None, dtype="bool", requires_grad=False):
     """Generate binary random Tensor"""
-    device = ndl.cpu() if device is None else device
-    array = device.rand(*shape) <= p
+    array = nd.rand(shape, dtype, device) <= p
     return ndl.Tensor(array, device=device, dtype=dtype, requires_grad=requires_grad)
 
 

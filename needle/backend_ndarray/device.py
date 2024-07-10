@@ -19,6 +19,9 @@ class BackendDevice:
     def __eq__(self, other) -> bool:
         return self.name == other.name
 
+    def enabled(self):
+        return self.module is not None
+
     def __repr__(self) -> str:
         return self.name + "()"
 
@@ -26,11 +29,11 @@ class BackendDevice:
         """key method for fetch array operation api"""
         return getattr(self.module, name)
 
-# def cuda():
-#     global cuda_instance
-#     if cuda_instance is None:
-#         cuda_instance = BackendDevice("cuda", libndarray_backend_cuda)
-#     return cuda_instance
+def cuda():
+    global cuda_instance
+    if cuda_instance is None:
+        cuda_instance = BackendDevice("cuda", None)
+    return cuda_instance
 
 def cpu():
     global cpu_instance
@@ -42,5 +45,5 @@ def default_device():
     return cpu()
 
 
-# def all_devices():
-#     return [cpu(), cuda()]
+def all_devices():
+    return [cpu(), cuda()]
