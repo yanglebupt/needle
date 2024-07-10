@@ -26,8 +26,19 @@ class NDArray:
     ):
         """array is python nested list, it will be transfered to c++"""
         if isinstance(array, NDArray):
-            self.device = array.device if device is None else device
-            self.dtype = array.dtype if dtype is None else dtype
+            new_array = array + 0.0  # copy
+            NDArray.make(
+                new_array.shape,
+                self = self,
+                device = new_array.device,
+                dtype = new_array.dtype if dtype is None else dtype,
+                strides = new_array.strides,
+                offset = new_array.offset,
+                handle = new_array._handle,
+            )
+            # 是否重新指定 device
+            if device is not None and device != new_array.device:
+                self.to(device)
         elif isinstance(array, np.ndarray):
             NDArray.make(
                 array.shape,
@@ -64,34 +75,31 @@ class NDArray:
             # raise Exception(f"only support np.float32 and np.float64, but input dtype is {dtype}")
             return float32
 
-    # use numpy.array replace this method
+    # can use numpy.array replace this method
     @staticmethod
     def flatten_get_shape_of_list(nested_list):
         """
         This method simply convert a list type tensor to a flatten tensor with its shape
-        
+
         Example:
-        
-        Arguments:  
+
+        Arguments:
             nested_list: [[1, 2, 3], [-5, 2, 0]]
         Return:
             flat_data: [1, 2, 3, -5, 2, 0]
             shape: [2, 3]
         """
-        def flatten_recursively(nested_list):
-            flat_data = []
-            shape = []
-            if isinstance(nested_list, list):
-                for sublist in nested_list:
-                    inner_data, inner_shape = flatten_recursively(sublist)
-                    flat_data.extend(inner_data)
-                shape.append(len(nested_list))
-                shape.extend(inner_shape)
-            else:
-                flat_data.append(nested_list)
-            return flat_data, shape
-
-        flat_data, shape = flatten_recursively(nested_list)
+        flat_data = []
+        shape = []
+        if isinstance(nested_list, list):
+            for sublist in nested_list:
+                inner_data, inner_shape = NDArray.flatten_get_shape_of_list(sublist)
+                flat_data.extend(inner_data)  # data 拼接起来
+            # 内部元素遍历完后，当前 shape 拼接 内部 shape（递归归并的思路）
+            shape.append(len(nested_list))
+            shape.extend(inner_shape)
+        else:  # 递归终止条件，添加单个数，shape 为空
+            flat_data.append(nested_list)
         return flat_data, shape
 
     @staticmethod
@@ -152,7 +160,7 @@ class NDArray:
         Return true if array is compact in memory and internal size equals product
         of the shape dimensions
 
-        有些操作会导致 strides 不在满足 row major 的形式
+        有些操作会导致 strides 不再满足 row major 的形式
         1. 例如 transpose 会导致 strides 也会交换，此时就不再是 compact/contiguous
         2. slice 取出来的（slice 很灵活，可以跨着取），也不是 compact 
 
@@ -164,12 +172,12 @@ class NDArray:
           shape: (3, 2, 4)
           strides: (4, 12, 1)
 
-          compact strides: (8, 4, 1)
+          but compact strides is (8, 4, 1)
         """
         return self.strides == NDArray.compact_strides(self.shape) and prod(self.shape)==self._handle.size
 
     def compact(self):
-        """ Convert a matrix to be compact """
+        """ Convert a matrix to be compact Return a new"""
         if self.is_compact():
             return self
         else:
@@ -204,13 +212,18 @@ class NDArray:
                 "Product of current shape is not equal to \
                               the product of the new shape!"
             )
+        target = self if self.is_compact() else self.compact()
         # 可以先 compact，然后再 reshape
-        if not self.is_compact():
-            raise ValueError("The matrix is not compact!")
+        # if not self.is_compact():
+        #     raise ValueError("The matrix is not compact!")
 
         # reshape 需要重新计算 compact strides
         return NDArray.make(
-            new_shape, strides=NDArray.compact_strides(new_shape), handle=self._handle, device=self.device, dtype=self.dtype
+            new_shape,
+            strides=NDArray.compact_strides(new_shape),
+            handle=target._handle,
+            device=target.device,
+            dtype=target.dtype,
         )
         ### END YOUR SOLUTION
 
@@ -233,10 +246,18 @@ class NDArray:
             strides changed).
         """
         ### BEGIN YOUR SOLUTION
+        assert len(new_axes) == len(self.shape), "permute must be same ndim"
         new_shape = tuple([self.shape[axes] for axes in new_axes])
         new_strides = tuple([self.strides[axes] for axes in new_axes])
         return NDArray.make(new_shape, strides=new_strides, handle=self._handle, device=self.device, dtype=self.dtype)
         ### END YOUR SOLUTION
+
+    def swapaxes(self, axis1:int, axis2:int):
+        new_shape = list(self.shape)
+        new_shape[axis1], new_shape[axis2] = (new_shape[axis2], new_shape[axis1])
+        new_strides = list(self.strides)
+        new_strides[axis1], new_strides[axis2] = (new_strides[axis2], new_strides[axis1])
+        return NDArray.make(new_shape, strides=new_strides, handle=self._handle, device=self.device, dtype=self.dtype)
 
     def broadcast_to(self, new_shape):
         """
@@ -255,14 +276,22 @@ class NDArray:
             point to the same memory as the original array.
         """
         ### BEGIN YOUR SOLUTION
-        assert len(self.shape) == len(new_shape)
-        for x, y in zip(self.shape, new_shape):
-            assert x == y or x == 1
+        if self.shape == new_shape:
+            return self
 
         new_strides = list(self.strides)
-        for i in range(len(self.shape)):
-            if self.shape[i] != new_shape[i]:
-                new_strides[i] = 0
+        validate_len = 0
+        for x, y in zip(reversed(self.shape), reversed(new_shape)):
+            assert x == y or x == 1 # 确保只有 1 不同，其余都一样
+            if x != y:
+                new_strides[len(new_strides) - 1 - validate_len] = 0
+            validate_len += 1
+
+        if validate_len < (n:=len(new_shape)):
+            new_strides = [0] * (n - validate_len) + new_strides
+
+        assert len(new_strides) == len(new_shape)
+
         return NDArray.make(
             new_shape,
             strides=tuple(new_strides),
@@ -332,9 +361,11 @@ class NDArray:
         assert len(idxs) == self.ndim, "Need indexes equal to number of dimensions"
 
         ### BEGIN YOUR SOLUTION
-        new_shape = [(sl.stop - sl.start + sl.step - 1) // sl.step for sl in idxs]
-        offset = sum([sl.start * st for sl, st in zip(idxs, self.strides)])
-        new_strides = tuple([st * sl.step for st, sl in zip(self.strides, idxs)])
+        new_shape = [(sl.stop - sl.start + sl.step - 1) // sl.step for sl in idxs] # 每个维度取多少个
+        offset = sum(
+            [sl.start * st for sl, st in zip(idxs, self.strides)]
+        )  # 每个维度的偏移 * 每个维度的 stride 之和 --> 计算 offset
+        new_strides = tuple([st * sl.step for st, sl in zip(self.strides, idxs)])  # 每个维度的 stride *= 取的步长
         return NDArray.make(
             new_shape,
             strides=tuple(new_strides),
@@ -476,7 +507,6 @@ class NDArray:
         if hasattr(self.device, "matmul_tiled") and all(
             d % self.device.__tile_size__ == 0 for d in (m, n, p)
         ):
-            print(self.device.__tile_size__)
             def tile(a, tile):
                 return a.as_strided(
                     (a.shape[0] // tile, a.shape[1] // tile, tile, tile),
@@ -505,15 +535,21 @@ class NDArray:
     ### Reductions, i.e., sum/max over all element or over given axis
     def reduce_view_out(self, axis):
         """Return a view to the array set up for reduction functions and output array."""
-        if axis is None:
+        if axis is None: # 所有轴 reduce
             view = self.reshape((1,) * (self.ndim - 1) + (prod(self.shape),))
             out = NDArray.make((1,) * self.ndim, device=self.device, dtype=self.dtype)
         else:
-            view = self.permute(
-                tuple([a for a in range(self.ndim) if a != axis]) + (axis,)
+            if not isinstance(axis, tuple):
+                axis = (axis, )
+            keep_axis = tuple([a for a in range(self.ndim) if a not in axis])
+            view_shape = tuple([self.shape[i] for i in keep_axis]) + (
+                prod([self.shape[i] for i in axis]),
             )
+            # 1. permute： 将 reduce axis 抽出来排到最后
+            # 2. reshape： reduce axis 合成一个轴
+            view = self.permute(keep_axis + axis).reshape(view_shape)
             out = NDArray.make(
-                tuple([1 if i == axis else s for i, s in enumerate(self.shape)]),
+                tuple([1 if i in axis else s for i, s in enumerate(self.shape)]),
                 device=self.device,
                 dtype=self.dtype
             )
@@ -552,7 +588,7 @@ def zeros(shape, dtype=None, device=None):
     return full(shape, 0, dtype, device)
 
 def ones(shape, dtype=None, device=None):
-    return full(shape, 0, dtype, device)
+    return full(shape, 1, dtype, device)
 
 
 def randn(shape, dtype=None, device=None):

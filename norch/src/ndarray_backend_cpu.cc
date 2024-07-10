@@ -44,6 +44,7 @@ enum strided_index_mode
   SET_VAL
 };
 
+// TODO: 弄清楚原理
 void _strided_index_setter(const AlignedArray *a, AlignedArray *out, std::vector<uint32_t> shape,
                            std::vector<uint32_t> strides, size_t offset, strided_index_mode mode, int val = -1)
 {
@@ -89,6 +90,7 @@ void _strided_index_setter(const AlignedArray *a, AlignedArray *out, std::vector
   }
 }
 
+// TODO: 弄清楚原理
 void Compact(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t> shape,
              std::vector<uint32_t> strides, size_t offset)
 {
@@ -111,6 +113,7 @@ void Compact(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t> sha
   /// END YOUR SOLUTION
 }
 
+// TODO: 弄清楚原理
 void EwiseSetitem(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t> shape,
                   std::vector<uint32_t> strides, size_t offset)
 {
@@ -129,6 +132,7 @@ void EwiseSetitem(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t
   /// END YOUR SOLUTION
 }
 
+// TODO: 弄清楚原理
 void ScalarSetitem(const size_t size, scalar_t val, AlignedArray *out, std::vector<uint32_t> shape,
                    std::vector<uint32_t> strides, size_t offset)
 {
@@ -384,6 +388,7 @@ inline void AlignedDot(const scalar_t *__restrict__ a,
   /// END SOLUTION
 }
 
+// TODO: 弄清楚原理
 void MatmulTiled(const AlignedArray &a, const AlignedArray &b, AlignedArray *out, uint32_t m,
                  uint32_t n, uint32_t p)
 {
