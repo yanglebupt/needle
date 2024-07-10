@@ -1,8 +1,6 @@
 """Core data structures."""
 import needle
-from .backend_numpy import Device, cpu, all_devices
-from typing import List, Optional, NamedTuple, Tuple, Union
-from collections import namedtuple
+from typing import Dict, List, Optional, Tuple, Union
 import numpy
 from operator import add, mul
 from functools import reduce
@@ -15,9 +13,15 @@ TENSOR_COUNTER = 0
 
 # NOTE: we will import numpy as the array_api
 # as the backend for our computations, this line will change in later homeworks
-import numpy as array_api
+# import numpy as array_api
+# NDArray = numpy.ndarray
 
-NDArray = numpy.ndarray
+from . import backend_ndarray as array_api
+NDArray = array_api.NDArray
+from .backend_ndarray import (
+    BackendDevice as Device,
+    cpu,
+)
 
 
 class Op:

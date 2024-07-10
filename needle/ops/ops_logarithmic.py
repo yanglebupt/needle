@@ -1,11 +1,6 @@
 from typing import Optional
-from ..autograd import NDArray
-from ..autograd import Op, Tensor, Value, TensorOp
-from ..autograd import TensorTuple, TensorTupleOp
-
+from ..autograd import Tensor, TensorOp
 from .ops_mathematic import *
-
-import numpy as array_api
 
 class LogSoftmax(TensorOp):
     def compute(self, Z):

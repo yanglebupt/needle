@@ -1,9 +1,6 @@
 """Optimization module"""
-
 from typing import List
-import numpy as np
 from .nn import Parameter
-
 
 class Optimizer:
 

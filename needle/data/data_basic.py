@@ -1,7 +1,7 @@
 import numpy as np
 from ..autograd import Tensor
 
-from typing import Iterator, Optional, List, Sized, Union, Iterable, Any
+from typing import Optional, List
 
 
 class Dataset:

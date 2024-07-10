@@ -1,18 +1,16 @@
 """Operator implementations."""
 
-from numbers import Number
-from typing import Optional, List, Tuple, Union
+from typing import Optional
 
 from ..autograd import NDArray
-from ..autograd import Op, Tensor, Value, TensorOp
-from ..autograd import TensorTuple, TensorTupleOp
-import numpy
+from ..autograd import Tensor, TensorOp
 
 # NOTE: we will import numpy as the array_api
 # as the backend for our computations, this line will change in later homeworks
+# import numpy
+# import numpy as array_api
 
-import numpy as array_api
-
+from .. import backend_ndarray as array_api
 
 class EWiseAdd(TensorOp):
     def compute(self, a: NDArray, b: NDArray):

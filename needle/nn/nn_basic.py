@@ -1,13 +1,9 @@
 """The module.
 """
-
-from operator import mul
 from typing import List, Tuple
 from needle.autograd import Tensor
 from needle import ops
 import needle.init as init
-from functools import reduce
-
 
 class Parameter(Tensor):
     """A special kind of tensor that represents parameters."""
