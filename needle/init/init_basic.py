@@ -16,7 +16,8 @@ def randn(*shape, mean=0.0, std=1.0, device=None, dtype="float32", requires_grad
 
 def constant(*shape, c=1.0, device=None, dtype="float32", requires_grad=False):
     """Generate constant Tensor"""
-    array = nd.ones(shape, dtype, device) * c  # note: can change dtype
+    array = nd.empty(shape, dtype, device)  # note: can change dtype
+    array.fill(c)
     return ndl.Tensor(array, device=device, dtype=dtype, requires_grad=requires_grad)
 
 

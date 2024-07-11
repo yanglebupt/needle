@@ -364,7 +364,7 @@ class NDArray:
         new_shape = [(sl.stop - sl.start + sl.step - 1) // sl.step for sl in idxs] # 每个维度取多少个
         offset = sum(
             [sl.start * st for sl, st in zip(idxs, self.strides)]
-        )  # 每个维度的偏移 * 每个维度的 stride 之和 --> 计算 offset
+        )  # 每个维度的偏移(start) * 每个维度的 stride 之和 --> 计算 offset
         new_strides = tuple([st * sl.step for st, sl in zip(self.strides, idxs)])  # 每个维度的 stride *= 取的步长
         return NDArray.make(
             new_shape,
@@ -510,7 +510,7 @@ class NDArray:
             def tile(a, tile):
                 return a.as_strided(
                     (a.shape[0] // tile, a.shape[1] // tile, tile, tile),
-                    (a.shape[1] * tile, tile, self.shape[1], 1),
+                    (a.shape[1] * tile, tile, self.shape[1], 1),  # why strides is this ?
                 )
 
             t = self.device.__tile_size__

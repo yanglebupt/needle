@@ -44,7 +44,6 @@ enum strided_index_mode
   SET_VAL
 };
 
-// TODO: 弄清楚原理
 void _strided_index_setter(const AlignedArray *a, AlignedArray *out, std::vector<uint32_t> shape,
                            std::vector<uint32_t> strides, size_t offset, strided_index_mode mode, int val = -1)
 {
@@ -90,7 +89,6 @@ void _strided_index_setter(const AlignedArray *a, AlignedArray *out, std::vector
   }
 }
 
-// TODO: 弄清楚原理
 void Compact(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t> shape,
              std::vector<uint32_t> strides, size_t offset)
 {
@@ -113,7 +111,6 @@ void Compact(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t> sha
   /// END YOUR SOLUTION
 }
 
-// TODO: 弄清楚原理
 void EwiseSetitem(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t> shape,
                   std::vector<uint32_t> strides, size_t offset)
 {
@@ -132,7 +129,6 @@ void EwiseSetitem(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t
   /// END YOUR SOLUTION
 }
 
-// TODO: 弄清楚原理
 void ScalarSetitem(const size_t size, scalar_t val, AlignedArray *out, std::vector<uint32_t> shape,
                    std::vector<uint32_t> strides, size_t offset)
 {
@@ -379,16 +375,17 @@ inline void AlignedDot(const scalar_t *__restrict__ a,
   {
     for (uint32_t j = 0; j < TILE; j++)
     {
+      scalar_t t = 0;
       for (uint32_t k = 0; k < TILE; k++)
       {
-        out[i * TILE + j] += a[i * TILE + k] * b[k * TILE + j];
+        t += a[i * TILE + k] * b[k * TILE + j];
       }
+      out[i * TILE + j] += t;
     }
   }
   /// END SOLUTION
 }
 
-// TODO: 弄清楚原理
 void MatmulTiled(const AlignedArray &a, const AlignedArray &b, AlignedArray *out, uint32_t m,
                  uint32_t n, uint32_t p)
 {
@@ -412,15 +409,14 @@ void MatmulTiled(const AlignedArray &a, const AlignedArray &b, AlignedArray *out
    *
    */
   /// BEGIN SOLUTION
-  for (uint32_t i = 0; i < m * p; i++)
-    out->ptr[i] = 0;
+  memset(out->ptr, 0, out->size * ELEM_SIZE); // only for 0 init !!
   for (uint32_t i = 0; i < m / TILE; i++)
   {
     for (uint32_t j = 0; j < p / TILE; j++)
     {
       for (uint32_t k = 0; k < n / TILE; k++)
       {
-        AlignedDot(&a.ptr[i * n * TILE + k * TILE * TILE],
+        AlignedDot(&a.ptr[i * n * TILE + k * TILE * TILE], // [i,k] * [k,j] = [i,j] 为起点 TILE * TILE 的小矩阵
                    &b.ptr[k * p * TILE + j * TILE * TILE],
                    &out->ptr[i * p * TILE + j * TILE * TILE]);
       }
@@ -484,7 +480,7 @@ void ReduceSum(const AlignedArray &a, AlignedArray *out, uint32_t reduce_size)
   /// END SOLUTION
 }
 
-PYBIND11_MODULE(libndarray_backend_cpu, m)
+PYBIND11_MODULE(ndarray_backend_cpu, m)
 {
   m.attr("__device_name__") = "cpu";
   m.attr("__tile_size__") = TILE;

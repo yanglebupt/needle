@@ -1,5 +1,4 @@
-# import libndarray_backend_cuda
-import libndarray_backend_cpu
+import ndarray_backend_cpu
 
 cuda_instance = None
 cpu_instance = None
@@ -38,7 +37,7 @@ def cuda():
 def cpu():
     global cpu_instance
     if cpu_instance is None:
-        cpu_instance = BackendDevice("cpu", libndarray_backend_cpu)
+        cpu_instance = BackendDevice("cpu", ndarray_backend_cpu)
     return cpu_instance
 
 def default_device():
