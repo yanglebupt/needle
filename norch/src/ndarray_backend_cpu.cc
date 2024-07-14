@@ -45,7 +45,7 @@ enum strided_index_mode
 };
 
 void _strided_index_setter(const AlignedArray *a, AlignedArray *out, std::vector<uint32_t> shape,
-                           std::vector<uint32_t> strides, size_t offset, strided_index_mode mode, int val = -1)
+                           std::vector<uint32_t> strides, uint32_t offset, strided_index_mode mode, int val = -1)
 {
   int depth = shape.size();
   std::vector<uint32_t> loop(depth, 0);
@@ -90,7 +90,7 @@ void _strided_index_setter(const AlignedArray *a, AlignedArray *out, std::vector
 }
 
 void Compact(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t> shape,
-             std::vector<uint32_t> strides, size_t offset)
+             std::vector<uint32_t> strides, uint32_t offset)
 {
   /**
    * Compact an array in memory
@@ -112,7 +112,7 @@ void Compact(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t> sha
 }
 
 void EwiseSetitem(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t> shape,
-                  std::vector<uint32_t> strides, size_t offset)
+                  std::vector<uint32_t> strides, uint32_t offset)
 {
   /**
    * Set items in a (non-compact) array
@@ -129,8 +129,8 @@ void EwiseSetitem(const AlignedArray &a, AlignedArray *out, std::vector<uint32_t
   /// END YOUR SOLUTION
 }
 
-void ScalarSetitem(const size_t size, scalar_t val, AlignedArray *out, std::vector<uint32_t> shape,
-                   std::vector<uint32_t> strides, size_t offset)
+void ScalarSetitem(const uint32_t size, scalar_t val, AlignedArray *out, std::vector<uint32_t> shape,
+                   std::vector<uint32_t> strides, uint32_t offset)
 {
   /**
    * Set items is a (non-compact) array
@@ -447,7 +447,7 @@ void ReduceMax(const AlignedArray &a, AlignedArray *out, uint32_t reduce_size)
   for (uint32_t i = 0; i < out->size; i++)
   {
     scalar_t max = a.ptr[i * reduce_size];
-    for (uint32_t j = 0; j < reduce_size; j++)
+    for (uint32_t j = 1; j < reduce_size; j++) // 可以从 1 开始
     {
       max = std::max(max, a.ptr[i * reduce_size + j]);
     }
