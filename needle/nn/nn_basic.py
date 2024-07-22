@@ -32,6 +32,9 @@ class Module:
 
     def __call__(self, *args, **kwargs):
         return self.forward(*args, **kwargs)
+    
+    def to(device):
+        pass
 
 
 def _unpack_params(value: object) -> List[Tensor]:
@@ -139,7 +142,7 @@ class SoftmaxLoss(Module):
     def forward(self, logits: Tensor, y: Tensor):
         ### BEGIN YOUR SOLUTION
         B, N = logits.shape
-        y_one_hot = init.one_hot(N, y)
+        y_one_hot = init.one_hot(N, y, device=y.device)
 
         # sum 得到的标量  <class 'numpy.float32'> 而不是 NDArray 了
         # 而在 numpy 中  numpy.float32 / nums -->  numpy.float64
@@ -182,6 +185,7 @@ def norm_base(
     return out, (mean_, var_)
 
 
+# 注意 Batch Normalization C 在前面
 # Applies Batch Normalization over a 2D or 3D input.
 # MLP example: (N, C) dim = C   NLP example: (N, C, L) dim = C
 # N is the batch size, C is the number of features or channels, and L is the sequence length
@@ -247,6 +251,19 @@ class BatchNorm1d(Module):
             )
         ### END YOUR SOLUTION
 
+
+# for NCHW
+class BatchNorm2d(BatchNorm1d):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def forward(self, x: Tensor) -> Tensor:
+        s = x.shape
+        l = len(s)
+        assert l == 4, "BatchNorm2d only used for a 4D."
+        _x = x.transpose((1,2)).transpose((2,3)).reshape((s[0]*s[2]*s[3], s[1]))   # NCHW --> NHWC --> N'C
+        y = super().forward(_x).reshape((s[0], s[2], s[3], s[1]))  # NHWC
+        return y.transpose((2, 3)).transpose((1, 2))  # NHWC --> NCHW
 
 # MLP example: (N, C) dims = C   NLP Example: (N, L, C) dims = C   Image Example: (N, C, H, W) dims = [C, H, W]
 # The mean and standard-deviation are calculated over the last D dimensions, where D is the length of dims

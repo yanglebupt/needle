@@ -193,7 +193,7 @@ class TensorTuple(Value):
 
     def detach(self):
         """Create a new tensor that shares the data but detaches from the graph."""
-        return Tuple.make_const(self.realize_cached_data())
+        return TensorTuple.make_const(self.realize_cached_data())
 
 
 class Tensor(Value):
@@ -208,14 +208,19 @@ class Tensor(Value):
         requires_grad=True,
         **kwargs
     ):
-        if isinstance(array, Tensor):
-            
+        if isinstance(array, Tensor) or isinstance(array, NDArray):
+
             if device is None:
                 device = array.device
             if dtype is None:
                 dtype = array.dtype
-            if device == array.device and dtype == array.dtype:
-                
+
+            if (
+                device == array.device
+                and dtype == array.dtype
+                and isinstance(array, Tensor)
+            ):
+
                 cached_data = array.realize_cached_data()
             else:
                 # fall back, copy through numpy conversion
@@ -282,7 +287,7 @@ class Tensor(Value):
     @property
     def shape(self):
         return self.realize_cached_data().shape
-    
+
     @property
     def size(self):
         return reduce(mul, self.realize_cached_data().shape) 
@@ -308,7 +313,7 @@ class Tensor(Value):
         compute_gradient_of_variables(self, out_grad)
 
     def __repr__(self):
-        return "needle.Tensor(" + str(self.realize_cached_data()) + ")"
+        return f"needle.Tensor({str(self.realize_cached_data())}, dtype={str(self.dtype)}, device={str(self.device)})"
 
     def __str__(self):
         return self.realize_cached_data().__str__()
@@ -343,6 +348,12 @@ class Tensor(Value):
         else:
             return needle.ops.AddScalar(-other)(self)
 
+    def __rsub__(self, other):
+        if isinstance(other, Tensor):
+            return needle.ops.EWiseAdd()(needle.ops.Negate()(self), other)
+        else:
+            return needle.ops.AddScalar(other)(-self)
+
     def __truediv__(self, other):
         if isinstance(other, Tensor):
             return needle.ops.EWiseDiv()(self, other)
@@ -372,8 +383,7 @@ class Tensor(Value):
 
     __radd__ = __add__
     __rmul__ = __mul__
-    __rsub__ = __sub__
-    __rmatmul__ = __matmul__
+    __rmatmul__ = __matmul__  # TODO
 
 
 def compute_gradient_of_variables(output_tensor, out_grad):

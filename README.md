@@ -26,3 +26,9 @@ sys.path.append("/root/code/needle")
 ```
 %cd /root/code/needle
 ```
+
+## TODO
+
+model.to(device) 的实现
+
+RNN/LSTM/Transformer 看情况写不写吧

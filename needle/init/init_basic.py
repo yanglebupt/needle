@@ -43,12 +43,8 @@ def randb(*shape, p=0.5, device=None, dtype="bool", requires_grad=False):
 
 def one_hot(n, i, device=None, dtype="float32", requires_grad=False):
     """Generate one-hot encoding Tensor"""
-    device = ndl.cpu() if device is None else device
-    return ndl.Tensor(
-        device.one_hot(n, i.numpy(), dtype=dtype),
-        device=device,
-        requires_grad=requires_grad,
-    )
+    array = nd.one_hot(n, i.numpy(), dtype=dtype, device=device)
+    return ndl.Tensor(array, device=device, dtype=dtype, requires_grad=requires_grad)
 
 
 def zeros_like(array, *, device=None, requires_grad=False):

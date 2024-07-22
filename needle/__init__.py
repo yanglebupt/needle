@@ -1,16 +1,14 @@
-import sys
-sys.path.append("./backend_ndarray")
-
-from . import ops
-from .ops import *
 from .autograd import Tensor
 
-from .init import ones, zeros, zeros_like, ones_like
-
+from . import ops
 from . import init
 from . import data
 from . import nn
 from . import optim
 from . import backend_ndarray
 
-from .backend_ndarray import *
+from .ops import *
+from .init.init_basic import *
+from .backend_ndarray.device import *
+from .backend_ndarray.ndtype import *
+from .backend_ndarray.ndarray import NDArray

@@ -150,7 +150,7 @@ def submit_random_crop():
 
 
 
-root="./apps/data"
+root="./apps/data/mnist"
 
 
 def test_mnist_dataset():
